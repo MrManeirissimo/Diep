@@ -6,6 +6,6 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
-    path: Assets/Scenes/SampleScene.unity
-    guid: 2cda990e2423bbf4892e6590ba056729
+    path: Assets/Scenes/DiepLevel.unity
+    guid: 2cc7220bd1dc28e48a7b454b8cafd28e
   m_configObjects: {}

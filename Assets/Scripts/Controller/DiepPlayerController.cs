@@ -8,7 +8,7 @@ public class DiepPlayerController : PlayerController {
 
     private void Update() {
         if (FireInputDown()) {
-            print("Hi");
+
         }
 
         DiepCharacter diepCharacter = (DiepCharacter)character;

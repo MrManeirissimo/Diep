@@ -8,7 +8,7 @@ using UnityEngine.Serialization;
 namespace DarkRift.Client.Unity
 {
     [AddComponentMenu("DarkRift/Client")]
-	public sealed class UnityClient : MonoBehaviour
+	public class UnityClient : MonoBehaviour
 	{
         /// <summary>
         ///     The IP address this client connects to.
@@ -34,7 +34,7 @@ namespace DarkRift.Client.Unity
         [SerializeField]
         [FormerlySerializedAs("address")]
         [Tooltip("The host to connect to.")]
-        private string host = "localhost";
+        protected string host = "localhost";
 
         /// <summary>
         ///     The port this client connects to.
@@ -47,26 +47,26 @@ namespace DarkRift.Client.Unity
 
 		[SerializeField]
 		[Tooltip("The port on the server the client will connect to.")]
-		private ushort port = 4296;
+		protected ushort port = 4296;
 
         [SerializeField]
         [Tooltip("Whether to disable Nagel's algorithm or not.")]
 #pragma warning disable IDE0044 // Add readonly modifier, Unity can't serialize readonly fields
-        private bool noDelay = false;
+        protected bool noDelay = false;
 
         [SerializeField]
         [FormerlySerializedAs("autoConnect")]
         [Tooltip("Indicates whether the client will connect to the server in the Start method.")]
-        private bool connectOnStart = true;
+        protected bool connectOnStart = true;
 
         [SerializeField]
         [FormerlySerializedAs("invokeFromDispatcher")]
         [Tooltip("Specifies that DarkRift should take care of multithreading and invoke all events from Unity's main thread.")]
-        private volatile bool eventsFromDispatcher = true;
+        protected volatile bool eventsFromDispatcher = true;
 
         [SerializeField]
         [Tooltip("Specifies whether DarkRift should log all data to the console.")]
-        private volatile bool sniffData = false;
+        protected volatile bool sniffData = false;
 #pragma warning restore IDE0044 // Add readonly modifier
         #region Cache settings
         #region Legacy
@@ -159,7 +159,7 @@ namespace DarkRift.Client.Unity
         /// </summary>
         [SerializeField]
 #pragma warning disable IDE0044 // Add readonly modifier, Unity can't serialize readonly fields
-        private SerializableObjectCacheSettings objectCacheSettings = new SerializableObjectCacheSettings();
+        protected SerializableObjectCacheSettings objectCacheSettings = new SerializableObjectCacheSettings();
 #pragma warning restore IDE0044 // Add readonly modifier, Unity can't serialize readonly fields
         #endregion
 
@@ -212,14 +212,14 @@ namespace DarkRift.Client.Unity
         /// 	The actual client connecting to the server.
         /// </summary>
         /// <value>The client.</value>
-        public DarkRiftClient Client { get; private set; }
+        public DarkRiftClient Client { get; protected set; }
 
         /// <summary>
         ///     The dispatcher for moving work to the main thread.
         /// </summary>
-        public Dispatcher Dispatcher { get; private set; }
+        public Dispatcher Dispatcher { get; protected set; }
         
-        private void Awake()
+        protected virtual void Awake()
         {
 #pragma warning disable CS0618 // Type or member is obsolete
             ObjectCacheSettings = objectCacheSettings.ToClientObjectCacheSettings();
@@ -235,26 +235,26 @@ namespace DarkRift.Client.Unity
             Client.Disconnected += Client_Disconnected;
         }
 
-        private void Start()
+        protected virtual void Start()
 		{
             //If connect on start is true then connect to the server
             if (connectOnStart)
 			    Connect(host, port, noDelay);
 		}
 
-        private void Update()
+        protected virtual void Update()
         {
             //Execute all the queued dispatcher tasks
             Dispatcher.ExecuteDispatcherTasks();
         }
 
-        private void OnDestroy()
+        protected void OnDestroy()
         {
             //Remove resources
             Close();
         }
 
-        private void OnApplicationQuit()
+        protected void OnApplicationQuit()
         {
             //Remove resources
             Close();
@@ -480,7 +480,7 @@ namespace DarkRift.Client.Unity
         /// </summary>
         /// <param name="sender">The client that received the message.</param>
         /// <param name="e">The arguments for the event.</param>
-        private void Client_MessageReceived(object sender, MessageReceivedEventArgs e)
+        protected void Client_MessageReceived(object sender, MessageReceivedEventArgs e)
         {
             //If we're handling multithreading then pass the event to the dispatcher
             if (eventsFromDispatcher)
@@ -519,7 +519,7 @@ namespace DarkRift.Client.Unity
             }
         }
 
-        private void Client_Disconnected(object sender, DisconnectedEventArgs e)
+        protected void Client_Disconnected(object sender, DisconnectedEventArgs e)
         {
             //If we're handling multithreading then pass the event to the dispatcher
             if (eventsFromDispatcher)
