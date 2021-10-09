@@ -6,6 +6,7 @@ public class HealthComponent : MonoBehaviour {
 
     public bool IsMaxHealth => current == max;
     public bool IsZeroHealth => current == 0;
+    public float Current { get => current; }
 
     [SerializeField] float max = 100;
     [SerializeField] float current = 100;
@@ -31,7 +32,15 @@ public class HealthComponent : MonoBehaviour {
         if (IsMaxHealth)
             OnMaxHealth?.Invoke();
 
-        else if (IsZeroHealth)
+        else if (IsZeroHealth) {
             OnZeroHealth?.Invoke();
+            DiepEventManager.Instance.Dispatch("OnLocalPlayerDeath", this,
+                () => {
+                    var args = new DiepEventArgs();
+                    args.AddProp("Player", GetComponent<DiepCharacter>());
+                    return args;
+                });
+        }
+            
     }
 }

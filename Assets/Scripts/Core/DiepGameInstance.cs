@@ -17,16 +17,35 @@ public class DiepGameInstance : GameInstance {
         return null;
     }
 
-    public DiepNetworkManager NetManager { get; private set; }
     public DiepPlayerManager PlayerManager { get; private set; }
+    public DiepNetworkManager NetManager { get; private set; }
+    public DiepEventManager EventManager { get; private set; }
 
     private DiepGameInstance() {
+        EventManager = DiepEventManager.Instance;
+
         NetManager = DiepNetworkManager.Instance;
         NetManager.ClientBindToMessageReceived(OnCliedReceivedMessage);
         GameObject.DontDestroyOnLoad(NetManager);
 
         PlayerManager = DiepPlayerManager.Instance;
         GameObject.DontDestroyOnLoad(PlayerManager);
+
+        PlayerManager.OnPlayerReceived += delegate (DiepCharacter character) {
+            EventManager.Dispatch("OnPlayerReceived", PlayerManager, () => {
+                DiepEventArgs args = new DiepEventArgs();
+                args.AddProp("player", character);
+                return args;
+            });
+        };
+
+        PlayerManager.OnLocalPlayerReceived += delegate (DiepPlayerController playerController) {
+            EventManager.Dispatch("OnLocalPlayerReceived", PlayerManager, () => {
+                DiepEventArgs args = new DiepEventArgs();
+                args.AddProp("controller", playerController);
+                return args;
+            });
+        };
     }
 
     private void OnCliedReceivedMessage(object sender, MessageReceivedEventArgs eArgs) {
@@ -48,6 +67,35 @@ public class DiepGameInstance : GameInstance {
             else if (message.Tag == DESPAWN_PLAYER) {
                 using (DarkRiftReader reader = message.GetReader())
                     PlayerManager.DespawnPlayer(reader.ReadUInt16());
+            }
+
+            else if (message.Tag == SPAWN_BULLET) {
+                ClientReadMessage(message,
+                    (reader) => {
+                        ushort ownerID = reader.ReadUInt16();
+
+                        Vector3 position = new Vector3 {
+                            x = reader.ReadSingle(),
+                            y = reader.ReadSingle(),
+                            z = 0
+                        };
+
+                        Vector3 velocity = new Vector3 {
+                            x = reader.ReadSingle(),
+                            y = reader.ReadSingle(),
+                            z = 0
+                        };
+
+                        Color32 color = new Color32 {
+                            r = reader.ReadByte(),
+                            g = reader.ReadByte(),
+                            b = reader.ReadByte(),
+                            a = 255
+                        };
+
+                        GameObject.FindObjectOfType<WeaponComponent>().FireRemote(ownerID, color, position, velocity);
+                    }
+                );
             }
         }
     }

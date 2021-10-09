@@ -10,7 +10,7 @@ public class PlayerCharacter : MonoBehaviour, IPlayerCharacer {
     [Tooltip("The controller entity reference for this character")]
     [SerializeField] PlayerController controller;
 
-    public void SetController(IPlayerController controller) {
+    public virtual void SetController(IPlayerController controller) {
         this.controller = (PlayerController)controller;
         if (this.controller) {
             OnControllerReceived?.Invoke(this.controller);

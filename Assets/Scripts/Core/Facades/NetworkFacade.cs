@@ -17,6 +17,9 @@ public static class NetworkFacade {
     public static void ClientReadMessageWithTag(ushort tag, MessageReceivedEventArgs eventArgs, DiepNetworkManager.MessageRead readDelegate)
         => GetNetManager().ClientReadMessageWithTag(tag, eventArgs, readDelegate);
 
+    public static void ClientReadMessage(Message message, DiepNetworkManager.MessageRead readDelegate)
+        => GetNetManager().ClientReadMessage(message, readDelegate);
+
     public static void SendClientMessage(DiepNetworkManager.MessageWrite messageWrite, ushort messageTag, SendMode sendMode)
         => GetNetManager().ClientSendMessage(messageWrite, messageTag, sendMode);
 

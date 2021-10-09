@@ -8,6 +8,14 @@ public class CameraFollow : MonoBehaviour
     public float speed = 5f;
 
     public Transform Target { get; set; }
+    private void Start() {
+        DiepEventManager.Instance.ListenToEvent("OnPlayerReceived",(sender, args) => {
+            var player = args.Get<DiepCharacter>("player");
+            if(player.GetController() != null) {
+                Target = player.transform;
+            }
+        });
+    }
 
     void Update() {
         if (Target != null) {

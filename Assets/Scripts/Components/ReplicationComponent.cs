@@ -13,14 +13,16 @@ public class ReplicationComponent : MonoBehaviour {
     [SerializeField] float interpolationAmount = 5;
     PlayerCharacter character;
 
-    Vector3 interpolateTowards;
+    Vector3 interpolationPosition;
     Vector3 previousPosition;
+    Vector3 interpolationRotation;
+    Vector3 previousRotation;
 
     void Awake() {
         ClientBindToMessageReceived(OnClientMessageReceived);
 
         character = GetComponent<PlayerCharacter>();
-        interpolateTowards = previousPosition = transform.position;
+        interpolationRotation = interpolationPosition = interpolationRotation = previousPosition = transform.position;
     }
 
     void OnClientMessageReceived(object sender, MessageReceivedEventArgs eventArgs) {
@@ -28,30 +30,40 @@ public class ReplicationComponent : MonoBehaviour {
             (reader) => {
                 ushort id = reader.ReadUInt16();
                 Vector3 position = new Vector3(reader.ReadSingle(), reader.ReadSingle(), 0);
+                Vector3 rotation = new Vector3(0, 0, reader.ReadSingle());
 
                 if (GetClientID() != id) {
-                    interpolateTowards = position;
+                    interpolationPosition = position;
+                    interpolationRotation = rotation;
                 }
             });
     }
 
     void Update() {
         if (IsLocalyControlled) {
-            if (DisplacementExceededDelta()) {
+            if (DisplacementExceededDelta() || RotationExceededDelta()) {
                 SendClientMessage((writer) => {
                     writer.Write(transform.position.x);
                     writer.Write(transform.position.y);
+                    writer.Write(transform.rotation.eulerAngles.z);
                 }, MOVEMENT, DarkRift.SendMode.Unreliable);
 
                 previousPosition = transform.position;
+                previousRotation = transform.rotation.eulerAngles;
             }
         }
         else {
-            transform.position = Vector3.MoveTowards(transform.position, interpolateTowards, interpolationAmount * Time.deltaTime);
+            transform.position = Vector3.MoveTowards(transform.position, interpolationPosition, interpolationAmount * Time.deltaTime);
+            transform.rotation = Quaternion.Lerp(transform.rotation, Quaternion.Euler(interpolationRotation), interpolationAmount * Time.deltaTime);
         }
     }
 
     bool DisplacementExceededDelta() {
         return Vector3.Distance(previousPosition, transform.position) > displacementDelta;
+    }
+
+    bool RotationExceededDelta() {
+        
+        return Mathf.Abs(transform.rotation.eulerAngles.z - previousRotation.z) > displacementDelta;
     }
 }

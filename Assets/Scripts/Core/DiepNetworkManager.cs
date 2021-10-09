@@ -47,6 +47,11 @@ public class DiepNetworkManager : SingletonBehavior<DiepNetworkManager> {
             }
         }
     }
+    public void ClientReadMessage(Message message, MessageRead readDelegate) {
+        using (DarkRiftReader reader = message.GetReader()) {
+            readDelegate(reader);
+        }
+    }
 
     private void Update() {
         if (Input.GetKeyDown(KeyCode.C)) {
